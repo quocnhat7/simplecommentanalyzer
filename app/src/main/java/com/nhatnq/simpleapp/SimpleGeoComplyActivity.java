@@ -95,27 +95,34 @@ public class SimpleGeoComplyActivity extends AppCompatActivity {
         while(matcher.find()){
             String url = matcher.group();
             String title = "";
-            try{
-                URL link = new URL(url);
-                BufferedReader br = new BufferedReader(new InputStreamReader(link.openStream()));
 
-                String line = "";
-                while ((line = br.readLine()) != null) {
-                    //Try to match each line immediately with TITLE regex
-                    Matcher webTitleMatcher = PAGE_TITLE.matcher(line);
-                    if (webTitleMatcher.find()) {
-                        /* replace any occurrences of whitespace (which may
-                         * include line feeds and other uglies) as well
-                         * as HTML brackets with a space */
-                        title = webTitleMatcher.group(1).replaceAll("[\\s\\<>]+", " ").trim();
-                        //Stop now as we found it ^^
-                        break;
+            if(Connectivity.isConnected(getBaseContext())){
+                //Only try to find page title if there is Internet connection on your device
+                try{
+                    URL link = new URL(url);
+                    BufferedReader br = new BufferedReader(new InputStreamReader(link.openStream()));
+
+                    String line = "";
+                    while ((line = br.readLine()) != null) {
+                        //Try to match each line immediately with TITLE regex
+                        Matcher webTitleMatcher = PAGE_TITLE.matcher(line);
+                        if (webTitleMatcher.find()) {
+                            /* replace any occurrences of whitespace (which may
+                             * include line feeds and other uglies) as well
+                             * as HTML brackets with a space */
+                            title = webTitleMatcher.group(1).replaceAll("[\\s\\<>]+", " ").trim();
+                            //Stop now as we found it ^^
+                            break;
+                        }
                     }
+                }catch (Exception e){
+                    e.printStackTrace();
+                    //If we can not find the title (wrong url or other reasons, ...)
+                    title = url;
                 }
-            }catch (Exception e){
-                e.printStackTrace();
-                //If we can not find the title (wrong url or other reasons, ...)
-                title = url;
+            }else{
+                //Unknown title
+                title = "";
             }
 
             urlItems.add(new GeocomplyUrlItem(title, url));
